@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cozy Clover Office 🍀</title>
+    <style>
+        :root {
+            --bg-color: #fdfcf0;
+            --card-bg: #ffffff;
+            --primary: #a8d5ba; /* Sage Green */
+            --secondary: #f4c2c2; /* Pastel Pink */
+            --accent: #e6b89c; /* Soft Peach */
+            --text: #5a5a5a;
+            --shadow: 0 4px 15px rgba(168, 213, 186, 0.3);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            overflow-x: hidden;
+            touch-action: manipulation;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            background: linear-gradient(180deg, #fff 0%, var(--bg-color) 100%);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .stats-container {
+            background: var(--card-bg);
+            padding: 15px 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-top: 10px;
+            display: inline-block;
+            border: 2px solid var(--primary);
+        }
+
+        #clover-count {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        #income-rate {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        main {
+            width: 90%;
+            max-width: 500px;
+            padding-bottom: 80px;
+        }
+
+        .upgrade-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.2s ease;
+            border-left: 5px solid var(--primary);
+        }
+
+        .upgrade-card:active {
+            transform: scale(0.98);
+        }
+
+        .icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1));
+        }
+
+        .info {
+            flex-grow: 1;
+        }
+
+        .name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .desc {
+            font-size: 0.8rem;
+            color: #777;
+        }
+
+        .btn-buy {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            min-width: 80px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-buy:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Floating Animation for Clicking */
+        .float-text {
+            position: absolute;
+            color: var(--primary);
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+
+        /* Healing Background Elements */
+        .bg-deco {
+            position: fixed;
+            z-index: -1;
+            opacity: 0.1;
+            font-size: 3rem;
+            animation: sway 6s infinite ease-in-out alternate;
+        }
+
+        @keyframes sway {
+            from { transform: rotate(-10deg) translateX(-10px); }
+            to { transform: rotate(10deg) translateX(10px); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Background Decorations -->
+    <div class="bg-deco" style="top: 10%; left: 5%;">🌿</div>
+    <div class="bg-deco" style="top: 30%; right: 10%; animation-delay: 1s;">☁️</div>
+    <div class="bg-deco" style="bottom: 20%; left: 15%; animation-delay: 2s;">🍄</div>
+    <div class="bg-deco" style="bottom: 10%; right: 5%; animation-delay: 3s;"></div>
+
+    <header onclick="manualClick(event)">
+        <h1>Cozy Clover Office 🍀</h1>
+        <div class="stats-container">
+            <div id="clover-count">0 🍀</div>
+            <div id="income-rate">+0 / detik</div>
+        </div>
+        <p style="font-size: 0.8rem; color: #aaa; margin-top: 5px;">Tap area atas untuk mengumpulkan clover!</p>
+    </header>
+
+    <main id="upgrades-list">
+        <!-- Upgrades will be injected here by JS -->
+    </main>
+
+    <script>
+        // --- GAME STATE ---
+        let gameState = {
+            clovers: 0,
+            totalIncome: 0,
+            clickPower: 1,
+            upgrades: [
+                { id: 'u1', name: 'Kucing Pemalas', icon: '', baseCost: 15, income: 1, count: 0, desc: 'Mendengkur sambil bekerja' },
+                { id: 'u2', name: 'Tanaman Hias', icon: '🪴', baseCost: 100, income: 5, count: 0, desc: 'Membersihkan udara kantor' },
+                { id: 'u3', name: 'Mesin Kopi', icon: '☕', baseCost: 500, income: 20, count: 0, desc: 'Aroma kopi yang menenangkan' },
+                { id: 'u4', name: 'Hujan Gerimis', icon: '🌧️', baseCost: 2000, income: 75, count: 0, desc: 'Suara alam di dalam ruangan' },
+                { id: 'u5', name: 'Lampu Gantung', icon: '💡', baseCost: 10000, income: 250, count: 0, desc: 'Cahaya hangat pastel' }
+            ]
+        };
+
+        // --- AUDIO SYSTEM (Web Audio API) ---
+        // Membuat suara healing tanpa file eksternal
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playHealingSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            if (type === 'click') {
+                // Suara "ting" lembut seperti lonceng angin
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'buy') {
+                // Suara "whoosh" lembut
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            }
+        }
+
+        // --- CORE LOGIC ---
+        function getCost(upgrade) {
+            return Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.count));
+        }
+
+        function updateUI() {
+            document.getElementById('clover-count').innerText = Math.floor(gameState.clovers) + ' 🍀';
+            document.getElementById('income-rate').innerText = '+' + gameState.totalIncome + ' / detik';
+            
+            // Update tombol beli
+            gameState.upgrades.forEach(u => {
+                const btn = document.getElementById(`btn-${u.id}`);
+                const costEl = document.getElementById(`cost-${u.id}`);
+                const countEl = document.getElementById(`count-${u.id}`);
+                
+                if(btn && costEl && countEl) {
+                    const currentCost = getCost(u);
+                    btn.disabled = gameState.clovers < currentCost;
+                    costEl.innerText = currentCost + ' 🍀';
+                    countEl.innerText = u.count;
+                }
+            });
+        }
+
+        function renderUpgrades() {
+            const container = document.getElementById('upgrades-list');
+            container.innerHTML = '';
+            
+            gameState.upgrades.forEach(u => {
+                const card = document.createElement('div');
+                card.className = 'upgrade-card';
+                card.innerHTML = `
+                    <div class="icon">${u.icon}</div>
+                    <div class="info">
+                        <div class="name">${u.name} <span style="font-size:0.8em; color:#aaa;">(Lv.<span id="count-${u.id}">0</span>)</span></div>
+                        <div class="desc">${u.desc} (+${u.income}/detik)</div>
+                    </div>
+                    <button id="btn-${u.id}" class="btn-buy" onclick="buyUpgrade('${u.id}')">
+                        Beli<br><span id="cost-${u.id}" style="font-size:0.8em">0</span>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+            updateUI();
+        }
+
+        function manualClick(e) {
+            gameState.clovers += gameState.clickPower;
+            playHealingSound('click');
+            
+            // Efek floating text
+            const float = document.createElement('div');
+            float.className = 'float-text';
+            float.innerText = '+' + gameState.clickPower;
+            float.style.left = e.clientX + 'px';
+            float.style.top = e.clientY + 'px';
+            document.body.appendChild(float);
+            setTimeout(() => float.remove(), 1000);
+            
+            updateUI();
+        }
+
+        function buyUpgrade(id) {
+            const upgrade = gameState.upgrades.find(u => u.id === id);
+            const cost = getCost(upgrade);
+            
+            if (gameState.clovers >= cost) {
+                gameState.clovers -= cost;
+                upgrade.count++;
+                gameState.totalIncome += upgrade.income;
+                playHealingSound('buy');
+                updateUI();
+            }
+        }
+
+        // --- GAME LOOP ---
+        setInterval(() => {
+            if (gameState.totalIncome > 0) {
+                gameState.clovers += gameState.totalIncome / 10; // Update setiap 100ms agar halus
+                updateUI();
+            }
+        }, 100);
+
+        // Save/Load System (LocalStorage)
+        function saveGame() {
+            localStorage.setItem('cozyCloverSave', JSON.stringify(gameState));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('cozyCloverSave');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                // Merge saved data carefully
+                gameState.clovers = parsed.clovers || 0;
+                gameState.totalIncome = 0; // Recalculate
+                
+                parsed.upgrades.forEach((savedU, index) => {
+                    if (gameState.upgrades[index]) {
+                        gameState.upgrades[index].count = savedU.count;
+                        gameState.totalIncome += gameState.upgrades[index].income * savedU.count;
+                    }
+                });
+            }
+        }
+
+        // Auto-save setiap 10 detik
+        setInterval(saveGame, 10000);
+
+        // Init
+        loadGame();
+        renderUpgrades();
+
+    </script>
+</body>
+</html>
